@@ -117,7 +117,7 @@ export interface Workout {
 export interface QueryAggregatedRequest {
   startDate: string;
   endDate: string;
-  dataType: 'steps' | 'active-calories' | 'mindfulness';
+  dataType: 'steps' | 'active-calories' | 'mindfulness' | 'heartrate-min' | 'heartrate-max' | 'heartrate-avg';
   bucket: string;
 }
 

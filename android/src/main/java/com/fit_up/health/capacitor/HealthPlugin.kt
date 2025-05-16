@@ -255,6 +255,9 @@ class HealthPlugin : Plugin() {
                 TotalCaloriesBurnedRecord.ENERGY_TOTAL
             ) { it?.inKilocalories }
             "distance" -> metricAndMapper("distance", CapHealthPermission.READ_DISTANCE, DistanceRecord.DISTANCE_TOTAL) { it?.inMeters }
+            "heartrate-min" -> metricAndMapper("heartrate", CapHealthPermission.READ_HEART_RATE, HeartRateRecord.BPM_MIN) { it?.toDouble() }
+            "heartrate-max" -> metricAndMapper("heartrate", CapHealthPermission.READ_HEART_RATE, HeartRateRecord.BPM_MAX) { it?.toDouble() }
+            "heartrate-avg" -> metricAndMapper("heartrate", CapHealthPermission.READ_HEART_RATE, HeartRateRecord.BPM_AVG) { it?.toDouble() }
             else -> throw RuntimeException("Unsupported dataType: $dataType")
         }
     }
