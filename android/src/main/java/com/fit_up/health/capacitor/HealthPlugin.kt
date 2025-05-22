@@ -17,6 +17,8 @@ import androidx.health.connect.client.records.ExerciseRouteResult
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.AggregateRequest
@@ -41,7 +43,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.jvm.optionals.getOrDefault
 
 enum class CapHealthPermission {
-    READ_STEPS, READ_WORKOUTS, READ_HEART_RATE, READ_ROUTE, READ_ACTIVE_CALORIES, READ_TOTAL_CALORIES, READ_DISTANCE;
+    READ_STEPS, READ_WORKOUTS, READ_HEART_RATE, READ_ROUTE, READ_ACTIVE_CALORIES, READ_TOTAL_CALORIES, READ_DISTANCE, READ_SLEEP;
 
     companion object {
         fun from(s: String): CapHealthPermission? {
@@ -85,6 +87,10 @@ enum class CapHealthPermission {
         Permission(
             alias = "READ_ROUTE",
             strings = ["android.permission.health.READ_EXERCISE_ROUTE"]
+        ),
+        Permission(
+            alias = "READ_SLEEP",
+            strings = ["android.permission.health.READ_SLEEP"]
         )
     ]
 )
@@ -141,7 +147,8 @@ class HealthPlugin : Plugin() {
         Pair(CapHealthPermission.READ_ACTIVE_CALORIES, "android.permission.health.READ_ACTIVE_CALORIES_BURNED"),
         Pair(CapHealthPermission.READ_TOTAL_CALORIES, "android.permission.health.READ_TOTAL_CALORIES_BURNED"),
         Pair(CapHealthPermission.READ_DISTANCE, "android.permission.health.READ_DISTANCE"),
-        Pair(CapHealthPermission.READ_STEPS, "android.permission.health.READ_STEPS")
+        Pair(CapHealthPermission.READ_STEPS, "android.permission.health.READ_STEPS"),
+        Pair(CapHealthPermission.READ_SLEEP, "android.permission.health.READ_SLEEP")
     )
 
     // Check if a set of permissions are granted
@@ -258,6 +265,7 @@ class HealthPlugin : Plugin() {
             "heartrate-min" -> metricAndMapper("heartrate", CapHealthPermission.READ_HEART_RATE, HeartRateRecord.BPM_MIN) { it?.toDouble() }
             "heartrate-max" -> metricAndMapper("heartrate", CapHealthPermission.READ_HEART_RATE, HeartRateRecord.BPM_MAX) { it?.toDouble() }
             "heartrate-avg" -> metricAndMapper("heartrate", CapHealthPermission.READ_HEART_RATE, HeartRateRecord.BPM_AVG) { it?.toDouble() }
+            "sleep-duration" -> metricAndMapper("sleep", CapHealthPermission.READ_SLEEP, SleepSessionRecord.SLEEP_DURATION_TOTAL) { it?.toSeconds()?.toDouble() }
             else -> throw RuntimeException("Unsupported dataType: $dataType")
         }
     }
