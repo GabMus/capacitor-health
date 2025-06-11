@@ -51,6 +51,17 @@ export interface HealthPlugin {
   queryAggregated(request: QueryAggregatedRequest): Promise<QueryAggregatedResponse>;
 
   /**
+   * Query aggregated data
+   * @param request
+   */
+  querySample(request: {
+    startDate: string;
+    endDate: string;
+    pageSize?: number;
+    dataType: 'heartrate';
+  }): Promise<QuerySampleResponse>;
+
+  /**
    * Query workouts
    * @param request
    */
@@ -118,7 +129,14 @@ export interface Workout {
 export interface QueryAggregatedRequest {
   startDate: string;
   endDate: string;
-  dataType: 'steps' | 'active-calories' | 'mindfulness' | 'heartrate-min' | 'heartrate-max' | 'heartrate-avg' | 'sleep-duration';
+  dataType:
+    | 'steps'
+    | 'active-calories'
+    | 'mindfulness'
+    | 'heartrate-min'
+    | 'heartrate-max'
+    | 'heartrate-avg'
+    | 'sleep-duration';
   bucket: string;
 }
 
@@ -130,4 +148,15 @@ export interface AggregatedSample {
   startDate: string;
   endDate: string;
   value: number;
+}
+
+export interface QuerySampleResponse {
+  records: {
+    startTime: string;
+    endTime: string;
+    samples: {
+      time: string;
+      beatsPerMinute: number;
+    }[];
+  }[];
 }

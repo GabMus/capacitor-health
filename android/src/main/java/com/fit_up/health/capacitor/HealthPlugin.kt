@@ -377,6 +377,51 @@ class HealthPlugin : Plugin() {
             .contains(permissionMapping[p]?.substringAfterLast('.'))
     }
 
+    @PluginMethod
+    fun querySample(call: PluginCall) {
+        val startTime = Instant.parse(call.getString("startDate"))
+        val endTime = Instant.parse(call.getString("endDate"))
+        val dataType = call.getString("dataType")
+        val pageSize = call.getInt("pageSize")
+        val req = when (dataType) {
+            "heartrate" -> ReadRecordsRequest(
+                recordType = HeartRateRecord::class,
+                timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                ascendingOrder = false,
+                pageSize = pageSize?:1000
+            )
+            else -> {
+                call.reject("Unknown dataType ${dataType}")
+                return
+            }
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val res = healthConnectClient.readRecords(req)
+                val out = JSObject()
+                val recordsList = JSArray()
+                res.records.forEach {
+                    val itjs = JSObject()
+                    val tzOffset = it.startZoneOffset
+                    itjs.put("startTime", it.startTime.atOffset(it.startZoneOffset).toString())
+                    itjs.put("endTime", it.endTime.atOffset(it.endZoneOffset).toString())
+                    val samplesArr = JSArray()
+                    it.samples.forEach {
+                        val itjs = JSObject()
+                        itjs.put("time", it.time.atOffset(tzOffset).toString())
+                        itjs.put("beatsPerMinute", it.beatsPerMinute)
+                        samplesArr.put(itjs)
+                    }
+                    itjs.put("samples", samplesArr)
+                    recordsList.put(itjs)
+                }
+                out.put("records", recordsList)
+                call.resolve(out)
+            } catch (e: Exception) {
+                call.reject("Error querying sample: ${e.message}")
+            }
+        }
+    }
 
     @PluginMethod
     fun queryWorkouts(call: PluginCall) {
